@@ -1,0 +1,29 @@
+{
+    "name": "evgen-dev/plupload-for-laravel",
+    "description": "Laravel/Plupload - Handle large file uploads",
+    "authors": [
+        {
+            "name": "Evgenii Devisok aka evgen_dev",
+            "email": "snikers9876@gmail.com"
+        }
+    ],
+    "keywords": [
+        "laravel",
+        "pluload",
+        "large files"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": ">=7.2.5",
+        "illuminate/support": "^8.0 | ^9.0 | ^10.0"
+    },
+    "require-dev": {
+       
+    },
+    "autoload": {
+        "psr-0": {
+            "EvgenDev\\LaravelPlupload": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
