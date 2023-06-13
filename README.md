@@ -1,4 +1,4 @@
-laravel-plupload
+plupload-for-laravel
 ================
 
 Laravel plupload support.
