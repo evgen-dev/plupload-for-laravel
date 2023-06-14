@@ -5,14 +5,19 @@ namespace EvgenDev\LaravelPlupload;
 use Closure;
 use EvgenDev\LaravelPlupload\Filters\Extensions;
 use EvgenDev\LaravelPlupload\Filters\Filesize;
+use EvgenDev\LaravelPlupload\Receiver;
 use Illuminate\Http\Request;
 
 class Manager
 {
     protected $request;
-    protected $receiver;
-    protected $filesize = null;
-    protected $extensions = null;
+
+    /**
+     * @var
+     */
+    protected Receiver $receiver;
+    protected Filesize $filesize;
+    protected Extensions $extensions;
 
     public function __construct(Request $request)
     {
@@ -20,7 +25,7 @@ class Manager
     }
 
     public function receive($name, $handler){
-        $this->receiver = new Receiver($this->request, $this->filesize, $this->extensions);
+        $this->receiver = new Receiver($this->request, $this->filesize ?? null, $this->extensions ?? null);
         return $this->receiver->receive($name, $handler);
     }
 
@@ -28,7 +33,7 @@ class Manager
                              string $units = Filesize::FILE_SIZE_MB,
                              string $system = Filesize::BYTES_SYSTEM_BINARY){
 
-        $this->filesizeLimit =  new Filesize($filesize, $units, $system);
+        $this->filesize =  new Filesize($filesize, $units, $system);
         return $this;
     }
 

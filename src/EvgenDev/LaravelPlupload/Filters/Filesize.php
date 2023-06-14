@@ -69,6 +69,10 @@ class Filesize{
         return $this;
     }
 
+    public function getUnits(){
+        return $this->units;
+    }
+
     /**
      * @param string $units
      * @return $this

@@ -46,8 +46,8 @@ class Receiver
         $fileName = $this->request->input('name');
         $extension = mb_strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-        if($this->extensions !== null && !in_array($extension, $this->extensions->get())){
-            throw new PluploadException(__('validation.invalid_file_extension', ['extension' => $extension]));
+        if(isset($this->extensions) && !in_array($extension, $this->extensions->get())){
+            throw new PluploadException(__('validation.invalid_file_extension', ['extension' => $extension]), 415);
         }
     }
 
@@ -57,18 +57,23 @@ class Receiver
      * @throws PluploadInvalidFilesizeException
      */
     public function validateFilesizeAfterChunkUploaded($inputFieldName): void{
-        if($this->maxFilesize === null){
+        if(!isset($this->filesize)){
             return;
         }
 
         $fileName = $this->getPath().DIRECTORY_SEPARATOR.$this->request->input('name');
+        $fileName .= $this->hasChunks() ? '.part' : '';
 
-        if($this->filesize !== null && filesize($fileName) > $this->filesize->getFilesize(Filesize::FILE_SIZE_B)){
+        if(!file_exists($fileName)){
+            return;
+        }
+
+        if($this->filesize !== null && filesize($fileName) > $this->filesize->getFilesize(Filesize::FILE_SIZE_UNITS_B)){
             throw new PluploadInvalidFilesizeException(__('validation.max.file', [
                 'attribute' => $inputFieldName,
                 'max' => $this->filesize->getFilesize($this->filesize->getUnits()),
                 'units' => $this->filesize->getUnits()
-            ]));
+            ]), 413);
         }
     }
 
@@ -120,6 +125,10 @@ class Receiver
             $fileName = $this->request->input('name');
 
             $filePath = $this->getPath().'/'.$fileName.'.part';
+
+            if($chunk > 0 && !file_exists($filePath)){
+                return $result;
+            }
 
             $this->appendData($filePath, $file);
 
@@ -179,7 +188,7 @@ class Receiver
 
         }catch (PluploadException $exception){
             $response['error'] = [
-                'code' => '415',
+                'code' => $exception->getCode(),
                 'message' => $exception->getMessage()
             ];
 
@@ -189,14 +198,16 @@ class Receiver
             @unlink($filePath.'.part');
 
             $response['error'] = [
-                'code' => '413',
+                'code' => $exception->getCode(),
                 'message' => $exception->getMessage()
             ];
+
+            http_response_code($exception->getCode());
 
         }catch (\Exception $exception){
             $response['error'] = [
                 'code' => '500',
-                'message' => 'Unexpected Error: '.$exception->getMessage()
+                'message' => 'Unexpected Error'.(env('APP_DEBUG') ? ': '.$exception->getMessage() : '')
             ];
         }
 
