@@ -5,6 +5,8 @@ namespace EvgenDev\LaravelPlupload;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use EvgenDev\LaravelPlupload\Filters\Extensions;
+use EvgenDev\LaravelPlupload\Filters\Filesize;
 
 class Receiver
 {
@@ -18,18 +20,22 @@ class Receiver
     /**
      * @var array Allowed extensions for upload, leave blank if unlimited
      */
-    protected $extensions = [];
+    protected Extensions $extensions;
 
     /**
      * @var int Maximum size of uploading file in bytes
      */
-    protected $maxFilesize = 0;
+    protected Filesize $filesize;
 
-    public function __construct(Request $request, array $extensions = [], int $maxFilesize = 0)
+    public function __construct(Request $request, ?Filesize $filesize, ?Extensions $extensions)
     {
         $this->request = $request;
-        $this->extensions = array_map('mb_strtolower', $extensions);
-        $this->maxFilesize = $maxFilesize;
+
+        if($extensions !== null)
+            $this->extensions = $extensions;
+
+        if($filesize !== null)
+            $this->filesize = $filesize;
     }
 
     /**
@@ -40,7 +46,7 @@ class Receiver
         $fileName = $this->request->input('name');
         $extension = mb_strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-        if(count($this->extensions) > 0 && !in_array($extension, $this->extensions)){
+        if($this->extensions !== null && !in_array($extension, $this->extensions->get())){
             throw new PluploadException(__('validation.invalid_file_extension', ['extension' => $extension]));
         }
     }
@@ -51,12 +57,17 @@ class Receiver
      * @throws PluploadInvalidFilesizeException
      */
     public function validateFilesizeAfterChunkUploaded($inputFieldName): void{
+        if($this->maxFilesize === null){
+            return;
+        }
+
         $fileName = $this->getPath().DIRECTORY_SEPARATOR.$this->request->input('name');
 
-        if($this->maxFilesize > 0 && filesize($fileName) > $this->maxFilesize*1024*1024){
+        if($this->filesize !== null && filesize($fileName) > $this->filesize->getFilesize(Filesize::FILE_SIZE_B)){
             throw new PluploadInvalidFilesizeException(__('validation.max.file', [
                 'attribute' => $inputFieldName,
-                'max' => $this->maxFilesize*1024
+                'max' => $this->filesize->getFilesize($this->filesize->getUnits()),
+                'units' => $this->filesize->getUnits()
             ]));
         }
     }
@@ -185,7 +196,7 @@ class Receiver
         }catch (\Exception $exception){
             $response['error'] = [
                 'code' => '500',
-                'message' => 'Unexpected Error'
+                'message' => 'Unexpected Error: '.$exception->getMessage()
             ];
         }
 

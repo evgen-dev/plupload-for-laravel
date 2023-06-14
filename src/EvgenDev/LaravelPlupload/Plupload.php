@@ -4,8 +4,7 @@ namespace EvgenDev\LaravelPlupload;
 
 use Illuminate\Contracts\Config\Repository as Config;
 
-class Plupload
-{
+class Plupload{
         /**
          * Config Instance.
          *
