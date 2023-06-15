@@ -30,7 +30,7 @@ class Manager
     }
 
     public function sizelimit($filesize,
-                             string $units = Filesize::FILE_SIZE_MB,
+                             string $units = Filesize::FILE_SIZE_UNITS_MB,
                              string $system = Filesize::BYTES_SYSTEM_BINARY){
 
         $this->filesize =  new Filesize($filesize, $units, $system);

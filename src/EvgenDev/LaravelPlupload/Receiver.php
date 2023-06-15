@@ -13,17 +13,17 @@ class Receiver
     /**
      * @var int Delete temporary file older than this value (seconds)
      */
-    private $maxFileAge = 7200; //7200 secondes (2 hours)
+    private $maxFileAge = 7200; //7200 seconds (2 hours)
 
     protected $request;
 
     /**
-     * @var array Allowed extensions for upload, leave blank if unlimited
+     * @var Extensions Allowed extensions for upload, leave blank if unlimited
      */
     protected Extensions $extensions;
 
     /**
-     * @var int Maximum size of uploading file in bytes
+     * @var Filesize Maximum size of uploading file in bytes
      */
     protected Filesize $filesize;
 
@@ -68,7 +68,7 @@ class Receiver
             return;
         }
 
-        if($this->filesize !== null && filesize($fileName) > $this->filesize->getFilesize(Filesize::FILE_SIZE_UNITS_B)){
+        if(filesize($fileName) > $this->filesize->getFilesize(Filesize::FILE_SIZE_UNITS_B)){
             throw new PluploadInvalidFilesizeException(__('validation.max.file', [
                 'attribute' => $inputFieldName,
                 'max' => $this->filesize->getFilesize($this->filesize->getUnits()),

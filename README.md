@@ -21,7 +21,7 @@ Add the provider to `config/app.php`
 ]
 ```
 
-If you want to use te build in builder insert the facade
+And the facade for short record if you want
 
 ```php
 'aliases' => array(
@@ -30,7 +30,7 @@ If you want to use te build in builder insert the facade
 ```
 
 # Using
-## 1. Create localization file resources/lang/en/validation.php file rows if not exists and add lines:
+## 1. Create localization file ```resources/lang/en/validation.php``` file if not exists and add lines:
 
 ```php
 return [
@@ -43,7 +43,7 @@ return [
 ```
 
 ## 2. Add upload routes
-### Basic usage without limitations:
+### Basic usage without any limitations:
 ```php
 Route::post('/upload', function(){
     return Plupload::receive('file', function($file){
@@ -56,7 +56,7 @@ Route::post('/upload', function(){
 
 ### Limit uploading file size:
 ```php
-use \EvgenDev\LaravelPlupload\Filters\Filesize;
+use EvgenDev\LaravelPlupload\Filters\Filesize;
 
 Route::post('/upload', function(){
     return Plupload::sizelimit(3, Filesize::FILE_SIZE_UNITS_MB)
@@ -79,7 +79,7 @@ Route::post('/upload', function()
 });
 ```
 
-### Limit uploading filesize and files extensions:
+### Limit uploading file size and files extensions:
 ```php
 use \EvgenDev\LaravelPlupload\Filters\Filesize;
 
@@ -92,6 +92,21 @@ Route::post('/upload', function()
         return 'ready';
     });
 });
+```
+
+### Usage in controller
+```php
+use EvgenDev\LaravelPlupload\Facades\Plupload;
+
+public function upload(Request $request){
+    return Plupload::sizelimit(5, Filesize::FILE_SIZE_UNITS_MB)
+        ->extensions(['txt'])
+        ->receive('file', function($file){
+            $filename = uniqid().'.'.$file->extension();
+            $file->move(storage_path() . '/plupload/', $filename);
+            return ['success' => true, 'filename' => $filename];
+        });
+}
 ```
 
 ## 3. csrf-token validation
@@ -110,11 +125,11 @@ in your Plupload inititalization JS file, add
 
 ```js
 headers: {
-        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-    },
+    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+},
 ```
 
-Don't forget to refresh the token.
+Don't forget to refresh the token after each request.
 
 ### 2. Disabling token validation
 
@@ -124,6 +139,7 @@ Add to your route rule:
 ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 ```
 
+It should turn out like this:
 ```php
 Route::post('/upload', function()
 {
@@ -135,9 +151,9 @@ Route::post('/upload', function()
 })->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 ```
 
-## 4. Preventing chunk uploading after file size or file extension error
+## 4. Preventing chunk uploading after file size or extension error
 
-Add in your JS file event handling:
+Add to your JS file event handling:
 ```js
 uploader.bind('ChunkUploaded', function(up, file, response) {
         response = jQuery.parseJSON(response.response);
